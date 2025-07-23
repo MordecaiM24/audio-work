@@ -1,69 +1,81 @@
-# React + TypeScript + Vite
+# YouTube Transcript Search Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Tailwind CSS frontend for searching through transcribed YouTube video content.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎵 **Playlist Browser**: Browse different collections/playlists of YouTube videos
+- 🔍 **Semantic Search**: Search through video transcripts with similarity scoring
+- 📺 **Video Grid**: Clean, responsive grid layout for video browsing
+- ⏱️ **Timestamped Results**: Search results include exact timestamps
+- 📱 **Responsive Design**: Works on desktop and mobile devices
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Make sure you have the backend API running:
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1. Start ChromaDB server:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd ../pipeline
+chroma run --host localhost --port 8000 --path ./chroma_db
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Start the FastAPI backend:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd ../pipeline
+uvicorn api:app --host 0.0.0.0 --port 8001 --reload
 ```
+
+### Running the Frontend
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Start the development server:
+
+```bash
+npm run dev
+```
+
+3. Open [http://localhost:5173](http://localhost:5173) in your browser
+
+## Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Layout.tsx      # Main layout with sidebar
+│   ├── Sidebar.tsx     # Playlist navigation
+│   ├── SearchBar.tsx   # Search input component
+│   ├── SearchResults.tsx # Search results display
+│   └── VideoGrid.tsx   # Video grid layout
+├── pages/              # Route components
+│   ├── Landing.tsx     # Home page
+│   └── Playlist.tsx    # Playlist detail page
+├── api.ts             # API client functions
+├── types.ts           # TypeScript type definitions
+└── App.tsx            # Main app with routing
+```
+
+## API Endpoints
+
+The frontend connects to these backend endpoints:
+
+- `GET /collections` - List all available playlists
+- `GET /collections/{name}/videos` - Get videos in a playlist
+- `GET /search` - Search transcripts within a collection
+
+## Technologies Used
+
+- **React 19** - Frontend framework
+- **TypeScript** - Type safety
+- **Tailwind CSS v4** - Styling
+- **React Router** - Client-side routing
+- **Vite** - Build tool and dev server
