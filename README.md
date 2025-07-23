@@ -7,12 +7,14 @@ A (semi) user-friendly pipeline for downloading YouTube playlists, transcribing 
 Process a complete YouTube playlist in one command:
 
 ```bash
+cd pipeline
 python main.py process --playlist "https://youtube.com/playlist?list=YOUR_ID" --name "my-podcast"
 ```
 
 Search your transcripts:
 
 ```bash
+cd pipeline
 python main.py search --collection "my-podcast" --query "machine learning"
 ```
 
@@ -65,6 +67,7 @@ pip install yt-dlp
 Get help anytime with:
 
 ```bash
+cd pipeline
 python main.py --help           # Show all commands
 python main.py process --help   # Help for specific command
 ```
@@ -74,6 +77,8 @@ python main.py process --help   # Help for specific command
 Use the main orchestrator for a user-friendly experience:
 
 ```bash
+cd pipeline
+
 # Process complete playlist (download → transcribe → index)
 python main.py process --playlist "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" --name "my-podcast"
 
@@ -94,6 +99,7 @@ You can also run individual pipeline stages:
 #### Step 1: Download YouTube Playlist
 
 ```bash
+cd pipeline
 python main.py download --playlist "https://youtube.com/playlist?list=YOUR_PLAYLIST_ID" --name "my-collection"
 
 # With video range
@@ -103,36 +109,40 @@ python main.py download -p "URL" -n "my-collection" --start 1 --end 20
 This creates a folder structure:
 
 ```
-my-collection/
-├── video-title-1/
-│   └── video-title-1.wav
-├── video-title-2/
-│   └── video-title-2.wav
-└── ...
+playlists/
+└── my-collection/
+    ├── video-title-1/
+    │   └── video-title-1.wav
+    ├── video-title-2/
+    │   └── video-title-2.wav
+    └── ...
 ```
 
 #### Step 2: Transcribe Audio Files
 
 ```bash
+cd pipeline
 python main.py transcribe --collection "my-collection"
 ```
 
 This adds JSON files with transcription data:
 
 ```
-my-collection/
-├── video-title-1/
-│   ├── video-title-1.wav
-│   └── video-title-1.json    # ← Transcription data
-├── video-title-2/
-│   ├── video-title-2.wav
-│   └── video-title-2.json
-└── ...
+playlists/
+└── my-collection/
+    ├── video-title-1/
+    │   ├── video-title-1.wav
+    │   └── video-title-1.json    # ← Transcription data
+    ├── video-title-2/
+    │   ├── video-title-2.wav
+    │   └── video-title-2.json
+    └── ...
 ```
 
 #### Step 3: Index in ChromaDB
 
 ```bash
+cd pipeline
 python main.py index --collection "my-collection"
 ```
 
@@ -145,6 +155,8 @@ This creates a ChromaDB collection with:
 #### Step 4: Search Transcripts
 
 ```bash
+cd pipeline
+
 # Search for content
 python main.py search --collection "my-collection" --query "machine learning AI"
 
@@ -174,6 +186,8 @@ Text: The advancement in AI and machine learning has been exponential, and now w
 Start the servers for client-server mode:
 
 ```bash
+cd pipeline
+
 # Start ChromaDB server (in one terminal)
 python main.py chroma-server --port 8000
 
@@ -197,14 +211,22 @@ python db.py search --collection my-collection --query "search terms"
 ### File Organization
 
 ```
-playlist-name/
-├── video-1/
-│   ├── video-1.wav          # 16kHz mono audio
-│   └── video-1.json         # Whisper transcription
-├── video-2/
-│   ├── video-2.wav
-│   └── video-2.json
-└── chroma_db/               # ChromaDB storage
+whisper-yt/
+├── playlists/
+│   └── playlist-name/
+│       ├── video-1/
+│       │   ├── video-1.wav          # 16kHz mono audio
+│       │   └── video-1.json         # Whisper transcription
+│       └── video-2/
+│           ├── video-2.wav
+│           └── video-2.json
+└── pipeline/
+    ├── main.py              # Main orchestrator
+    ├── chroma_db/           # ChromaDB storage
+    ├── download.py
+    ├── transcribe.py
+    ├── db.py
+    └── api.py
 ```
 
 ### Transcription Format

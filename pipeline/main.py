@@ -32,17 +32,13 @@ import time
 from pathlib import Path
 from typing import Optional
 
-# Add pipeline directory to path so we can import modules
-pipeline_dir = Path(__file__).parent / "pipeline"
-sys.path.insert(0, str(pipeline_dir))
-
 try:
     from download import process_playlist
     from transcribe import transcribe_playlist
     from db import process_collection, search_collection
 except ImportError as e:
     print(f"Error importing pipeline modules: {e}")
-    print("Make sure you're running from the project root directory.")
+    print("Make sure you're running from the pipeline directory.")
     sys.exit(1)
 
 
@@ -50,8 +46,12 @@ class PipelineOrchestrator:
     """Main orchestrator for the YouTube transcript pipeline."""
 
     def __init__(self):
-        self.pipeline_dir = Path(__file__).parent / "pipeline"
+        self.pipeline_dir = Path(__file__).parent
         self.base_dir = Path(__file__).parent
+        self.playlists_dir = self.base_dir / "playlists"
+
+        # Ensure playlists directory exists
+        self.playlists_dir.mkdir(exist_ok=True)
 
     def download_playlist(
         self,
@@ -63,6 +63,7 @@ class PipelineOrchestrator:
         """Download YouTube playlist audio."""
         print(f"🎵 Downloading playlist: {playlist_url}")
         print(f"📁 Collection name: {collection_name}")
+        print(f"📂 Output directory: playlists/{collection_name}")
 
         if start or end:
             print(f"📊 Range: videos {start or 1} to {end or 'end'}")
@@ -73,7 +74,7 @@ class PipelineOrchestrator:
             )
 
             if result_dir:
-                print(f"✅ Download completed! Files saved to: {result_dir}")
+                print(f"✅ Download completed! Files saved to: playlists/{result_dir}")
                 return True
             else:
                 print("❌ Download failed!")
@@ -85,7 +86,7 @@ class PipelineOrchestrator:
 
     def transcribe_collection(self, collection_name: str) -> bool:
         """Transcribe all audio files in a collection."""
-        collection_path = self.base_dir / collection_name
+        collection_path = self.playlists_dir / collection_name
 
         if not collection_path.exists():
             print(f"❌ Collection directory not found: {collection_path}")
@@ -119,7 +120,7 @@ class PipelineOrchestrator:
 
     def index_collection(self, collection_name: str) -> bool:
         """Index transcripts in ChromaDB."""
-        collection_path = self.base_dir / collection_name
+        collection_path = self.playlists_dir / collection_name
 
         if not collection_path.exists():
             print(f"❌ Collection directory not found: {collection_path}")
@@ -159,6 +160,39 @@ class PipelineOrchestrator:
         except Exception as e:
             print(f"❌ Search error: {e}")
             return False
+
+    def list_collections(self) -> None:
+        """List available collections."""
+        print("📋 Available collections:")
+
+        if not self.playlists_dir.exists():
+            print("❌ No playlists directory found")
+            return
+
+        collections = [d for d in self.playlists_dir.iterdir() if d.is_dir()]
+
+        if not collections:
+            print("📭 No collections found")
+            return
+
+        for collection_dir in sorted(collections):
+            # Count videos and transcripts
+            video_dirs = [d for d in collection_dir.iterdir() if d.is_dir()]
+            wav_count = sum(len(list(d.glob("*.wav"))) for d in video_dirs)
+            json_count = sum(
+                len(list(d.glob("*.json")))
+                for d in video_dirs
+                if not d.name.endswith(".wav.json")
+            )
+
+            status = (
+                "✅ Complete"
+                if wav_count == json_count and wav_count > 0
+                else "⏳ Incomplete"
+            )
+            print(
+                f"  📁 {collection_dir.name} - {wav_count} videos, {json_count} transcribed {status}"
+            )
 
     def process_complete_pipeline(
         self,
@@ -279,8 +313,9 @@ Examples:
   python main.py transcribe --collection "my-podcast"
   python main.py index --collection "my-podcast"
   
-  # Search
+  # Search and manage
   python main.py search --collection "my-podcast" --query "machine learning"
+  python main.py list
   
   # Servers
   python main.py chroma-server --port 8000
@@ -340,6 +375,9 @@ Examples:
         "--limit", "-l", type=int, default=5, help="Number of results"
     )
 
+    # List command
+    list_parser = subparsers.add_parser("list", help="List available collections")
+
     # ChromaDB server command
     chroma_parser = subparsers.add_parser("chroma-server", help="Start ChromaDB server")
     chroma_parser.add_argument("--port", type=int, default=8000, help="Server port")
@@ -396,6 +434,9 @@ Examples:
         )
         sys.exit(0 if success else 1)
 
+    elif args.command == "list":
+        orchestrator.list_collections()
+
     elif args.command == "chroma-server":
         orchestrator.start_chroma_server(port=args.port, host=args.host)
 
@@ -410,3 +451,6 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
+
+print(o)

@@ -116,10 +116,18 @@ def process_playlist(
         f"Found {len(videos)} videos in playlist. Processing {total_to_process} from index {start_index + 1} to {end_index}."
     )
 
+    # Create playlists directory structure
+    playlists_dir = "playlists"
+    if not os.path.exists(playlists_dir):
+        os.makedirs(playlists_dir)
+        print(f"Created playlists directory: {playlists_dir}")
+
     main_dir_name = to_kebab_case(title if title else playlist_title)
-    if not os.path.exists(main_dir_name):
-        os.makedirs(main_dir_name)
-        print(f"Created main directory: {main_dir_name}")
+    full_path = os.path.join(playlists_dir, main_dir_name)
+
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+        print(f"Created collection directory: {full_path}")
 
     for i, video in enumerate(videos_to_process, 1):
         video_title = video.get("title", "untitled-video")
@@ -134,7 +142,7 @@ def process_playlist(
         print("=" * 50)
 
         video_kebab_title = to_kebab_case(video_title)
-        video_dir = os.path.join(main_dir_name, video_kebab_title)
+        video_dir = os.path.join(full_path, video_kebab_title)
 
         if not os.path.exists(video_dir):
             os.makedirs(video_dir)
@@ -143,7 +151,7 @@ def process_playlist(
 
         download_and_convert_video(video_url, output_path_template)
 
-    print(f"\nPlaylist processing complete. Files are in '{main_dir_name}' directory.")
+    print(f"\nPlaylist processing complete. Files are in '{full_path}' directory.")
     return main_dir_name
 
 
