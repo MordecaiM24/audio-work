@@ -1,0 +1,8 @@
+.venv
+playlists
+*.wav
+*.json
+models
+build
+chroma_db
+waveform
