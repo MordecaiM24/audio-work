@@ -1,4 +1,9 @@
-import type { Collection, SearchResponse, CollectionVideos } from "./types";
+import type {
+  Collection,
+  SearchResponse,
+  CollectionVideos,
+  DiarizationFile,
+} from "./types";
 
 const API_BASE_URL = "http://localhost:8001";
 
@@ -38,4 +43,37 @@ export async function fetchCollectionVideos(
     throw new Error("Failed to fetch collection videos");
   }
   return response.json();
+}
+
+export async function fetchDiarization(
+  collection: string,
+  video: string
+): Promise<DiarizationFile> {
+  const encoded = encodeURIComponent(video);
+  const response = await fetch(
+    `${API_BASE_URL}/collections/${collection}/diarization/${encoded}`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch diarization");
+  }
+  return response.json();
+}
+
+export async function saveDiarization(
+  collection: string,
+  video: string,
+  data: DiarizationFile
+): Promise<void> {
+  const encoded = encodeURIComponent(video);
+  const response = await fetch(
+    `${API_BASE_URL}/collections/${collection}/diarization/${encoded}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to save diarization");
+  }
 }

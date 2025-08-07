@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Youtube, FolderX } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface VideoGridProps {
   videos: string[];
@@ -40,25 +41,30 @@ export default function VideoGrid({ videos, collectionName }: VideoGridProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {videos.map((video, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center dark:bg-red-900/20">
-                    <Youtube className="w-6 h-6 text-red-600 dark:text-red-400" />
+          <Link
+            key={index}
+            to={`/label/${collectionName}/${encodeURIComponent(video)}`}
+          >
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center dark:bg-red-900/20">
+                      <Youtube className="w-6 h-6 text-red-600 dark:text-red-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-sm line-clamp-2 leading-tight">
+                      {video}
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      YouTube Video
+                    </CardDescription>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-sm line-clamp-2 leading-tight">
-                    {video}
-                  </CardTitle>
-                  <CardDescription className="text-xs mt-1">
-                    YouTube Video
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

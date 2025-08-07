@@ -18,6 +18,7 @@ import { type Collection } from "./types";
 import { fetchCollections } from "./api";
 import Landing from "./pages/Landing";
 import Playlist from "./pages/Playlist";
+import Labeler from "./pages/Labeler";
 import { Link, useLocation } from "react-router-dom";
 import { FolderOpen, Home } from "lucide-react";
 import { ThemeProvider } from "./components/theme-provider";
@@ -36,6 +37,10 @@ function App() {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/playlist/:collectionName" element={<Playlist />} />
+              <Route
+                path="/label/:collectionName/:videoTitle"
+                element={<Labeler />}
+              />
             </Routes>
           </main>
         </SidebarProvider>

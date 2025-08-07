@@ -19,6 +19,8 @@ from typing import List, Dict, Any, Optional
 import chromadb
 from pydantic import BaseModel
 import os
+from pathlib import Path
+import json
 
 app = FastAPI(
     title="YouTube Transcript Search API",
@@ -209,6 +211,53 @@ async def get_collection_videos(collection_name: str):
             raise HTTPException(
                 status_code=500, detail=f"Error getting videos: {str(e)}"
             )
+
+
+BASE_PLAYLIST_DIR = Path(__file__).parent / "playlists"
+
+
+class DiarizationSegment(BaseModel):
+    start: float
+    end: float
+    speaker: str
+    label: Optional[str] = None
+
+
+class DiarizationFile(BaseModel):
+    segments: List[DiarizationSegment]
+
+
+@app.get(
+    "/collections/{collection_name}/diarization/{video_title}",
+    response_model=DiarizationFile,
+)
+async def get_diarization(collection_name: str, video_title: str):
+    path = (
+        BASE_PLAYLIST_DIR
+        / collection_name
+        / video_title
+        / f"{video_title}.diarization.json"
+    )
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Diarization not found")
+    with open(path) as f:
+        return json.load(f)
+
+
+@app.post("/collections/{collection_name}/diarization/{video_title}")
+async def save_diarization(
+    collection_name: str, video_title: str, diarization: DiarizationFile
+):
+    path = (
+        BASE_PLAYLIST_DIR
+        / collection_name
+        / video_title
+        / f"{video_title}.diarization.json"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(diarization.dict(), f)
+    return {"status": "saved"}
 
 
 if __name__ == "__main__":
