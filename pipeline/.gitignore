@@ -6,3 +6,4 @@ models
 build
 chroma_db
 waveform
+*.env

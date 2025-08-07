@@ -5,6 +5,10 @@ import { fetchCollectionVideos, searchInCollection } from "../api";
 import SearchBar from "../components/SearchBar";
 import SearchResults from "../components/SearchResults";
 import VideoGrid from "../components/VideoGrid";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Skeleton } from "../components/ui/skeleton";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function Playlist() {
   const { collectionName } = useParams<{ collectionName: string }>();
@@ -62,12 +66,12 @@ export default function Playlist() {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 rounded w-1/3 mb-6"></div>
-          <div className="h-10 bg-gray-300 rounded mb-8"></div>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-10 w-full max-w-2xl" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-300 rounded"></div>
+              <Skeleton key={i} className="h-24" />
             ))}
           </div>
         </div>
@@ -78,27 +82,17 @@ export default function Playlist() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex">
-            <svg
-              className="h-5 w-5 text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-destructive">Error</h3>
+                <p className="text-sm text-destructive/80 mt-1">{error}</p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -106,11 +100,13 @@ export default function Playlist() {
   if (!videos) {
     return (
       <div className="p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Playlist not found
-          </h1>
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h1 className="text-2xl font-bold text-foreground">
+              Playlist not found
+            </h1>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -120,21 +116,19 @@ export default function Playlist() {
       <div className="mb-8">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-foreground">
               {videos.collection}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               {videos.video_count} video{videos.video_count !== 1 ? "s" : ""} •
               Searchable transcripts
             </p>
           </div>
           {showSearch && (
-            <button
-              onClick={clearSearch}
-              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-            >
+            <Button variant="outline" onClick={clearSearch} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
               Show All Videos
-            </button>
+            </Button>
           )}
         </div>
 
