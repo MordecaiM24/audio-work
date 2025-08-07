@@ -10,7 +10,7 @@ export interface SearchResult {
   start_timestamp: string;
   end_timestamp: string;
   similarity_score?: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface SearchResponse {
@@ -24,4 +24,15 @@ export interface CollectionVideos {
   collection: string;
   video_count: number;
   videos: string[];
+}
+
+export interface DiarizationSegment {
+  start: number;
+  end: number;
+  speaker: string;
+  label?: string;
+}
+
+export interface DiarizationFile {
+  segments: DiarizationSegment[];
 }

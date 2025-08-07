@@ -35,6 +35,7 @@ from typing import Optional
 try:
     from download import process_playlist
     from transcribe import transcribe_playlist
+    from diarize import diarize_playlist
     from db import process_collection, search_collection
 except ImportError as e:
     print(f"Error importing pipeline modules: {e}")
@@ -116,6 +117,23 @@ class PipelineOrchestrator:
 
         except Exception as e:
             print(f"❌ Transcription error: {e}")
+            return False
+
+    def diarize_collection(self, collection_name: str) -> bool:
+        """Generate speaker diarization segments for a collection."""
+        collection_path = self.playlists_dir / collection_name
+
+        if not collection_path.exists():
+            print(f"❌ Collection directory not found: {collection_path}")
+            return False
+
+        print(f"🗣️ Diarizing collection: {collection_name}")
+        try:
+            diarize_playlist(str(collection_path))
+            print("✅ Diarization completed!")
+            return True
+        except Exception as e:
+            print(f"❌ Diarization error: {e}")
             return False
 
     def index_collection(self, collection_name: str) -> bool:
@@ -215,8 +233,13 @@ class PipelineOrchestrator:
         if not self.transcribe_collection(collection_name):
             return False
 
-        # Step 3: Index
-        print("\n🗂️  STEP 3: Indexing in ChromaDB...")
+        # Step 3: Diarize
+        print("\n🗣️ STEP 3: Speaker diarization...")
+        if not self.diarize_collection(collection_name):
+            return False
+
+        # Step 4: Index
+        print("\n🗂️  STEP 4: Indexing in ChromaDB...")
         if not self.index_collection(collection_name):
             return False
 
@@ -359,6 +382,14 @@ Examples:
         "--collection", "-c", required=True, help="Collection name"
     )
 
+    # Diarize command
+    diarize_parser = subparsers.add_parser(
+        "diarize", help="Generate speaker diarization"
+    )
+    diarize_parser.add_argument(
+        "--collection", "-c", required=True, help="Collection name"
+    )
+
     # Index command
     index_parser = subparsers.add_parser("index", help="Index transcripts in ChromaDB")
     index_parser.add_argument(
@@ -424,6 +455,10 @@ Examples:
         success = orchestrator.transcribe_collection(args.collection)
         sys.exit(0 if success else 1)
 
+    elif args.command == "diarize":
+        success = orchestrator.diarize_collection(args.collection)
+        sys.exit(0 if success else 1)
+
     elif args.command == "index":
         success = orchestrator.index_collection(args.collection)
         sys.exit(0 if success else 1)
@@ -451,6 +486,3 @@ Examples:
 
 if __name__ == "__main__":
     main()
-
-
-print(o)
